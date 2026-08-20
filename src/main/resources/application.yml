@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tpi-backend-bff
+
+services:
+  users-url: ${USERS_SERVICE_URL:http://localhost:8081}
+  products-url: ${PRODUCTS_SERVICE_URL:http://localhost:8082}
+
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200,http://localhost:4300,http://localhost}
