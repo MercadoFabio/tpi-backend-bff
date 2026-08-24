@@ -1,14 +1,35 @@
 server:
   port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+  servlet:
+    session:
+      cookie:
+        name: __Host-tpi-session
+        http-only: true
+        secure: true
+        same-site: strict
+        path: /
 
 spring:
   application:
     name: tpi-backend-bff
+  session:
+    store-type: redis
+    timeout: 30m
+    redis:
+      namespace: tpi:session
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
 
 services:
   users-url: ${USERS_SERVICE_URL:http://localhost:8081}
   products-url: ${PRODUCTS_SERVICE_URL:http://localhost:8082}
 
 app:
-  cors:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200,http://localhost:4300,http://localhost}
+  demo-auth:
+    email: ${DEMO_LOGIN_EMAIL:}
+    password: ${DEMO_LOGIN_PASSWORD:}

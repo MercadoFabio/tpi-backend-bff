@@ -1,6 +1,8 @@
 package io.github.mercadofabio.tpibackendbff.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import jakarta.annotation.PostConstruct;
+import java.net.URI;
 
 @ConfigurationProperties(prefix = "services")
 public class ServiceProperties {
@@ -22,5 +24,19 @@ public class ServiceProperties {
 
     public void setProductsUrl(String productsUrl) {
         this.productsUrl = productsUrl;
+    }
+
+    @PostConstruct
+    void validateDestinations() {
+        validateUrl(usersUrl);
+        validateUrl(productsUrl);
+    }
+
+    private void validateUrl(String value) {
+        URI uri = URI.create(value);
+        if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
+            || uri.getHost() == null || uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null) {
+            throw new IllegalStateException("Invalid upstream service configuration");
+        }
     }
 }

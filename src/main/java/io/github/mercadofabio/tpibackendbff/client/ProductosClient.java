@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -18,7 +19,7 @@ public class ProductosClient {
 
     private final RestClient restClient;
 
-    public ProductosClient(RestClient.Builder restClientBuilder, ServiceProperties serviceProperties) {
+    public ProductosClient(@Qualifier("bffRestClientBuilder") RestClient.Builder restClientBuilder, ServiceProperties serviceProperties) {
         this.restClient = restClientBuilder.baseUrl(serviceProperties.getProductsUrl()).build();
     }
 

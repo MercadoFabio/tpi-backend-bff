@@ -12,6 +12,7 @@ import io.github.mercadofabio.tpibackendbff.dto.ProductoDto;
 import io.github.mercadofabio.tpibackendbff.dto.UsuarioDto;
 import io.github.mercadofabio.tpibackendbff.exception.GlobalExceptionHandler;
 import io.github.mercadofabio.tpibackendbff.exception.UserNotFoundException;
+import io.github.mercadofabio.tpibackendbff.security.ApiSessionFilter;
 import io.github.mercadofabio.tpibackendbff.service.OverviewService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = BffController.class)
@@ -48,6 +50,9 @@ class BffControllerTest {
         given(overviewService.getOverview()).willReturn(response);
 
         mockMvc.perform(get("/api/overview"))
+            .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/v1/overview").session(authenticatedSession()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalUsuarios").value(1))
             .andExpect(jsonPath("$.totalProductos").value(1))
@@ -59,9 +64,21 @@ class BffControllerTest {
     void shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
         given(usuariosClient.getUsuarioById(99L)).willThrow(new UserNotFoundException(99L));
 
-        mockMvc.perform(get("/api/usuarios/99"))
+        mockMvc.perform(get("/api/v1/usuarios/99").session(authenticatedSession()))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.status").value(404))
-            .andExpect(jsonPath("$.message").value("Usuario 99 no existe"));
+            .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
+    }
+
+    @Test
+    void shouldRequireAnAuthenticatedServerSessionForVersionedBffRoutes() throws Exception {
+        mockMvc.perform(get("/api/v1/productos"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    private MockHttpSession authenticatedSession() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(ApiSessionFilter.SESSION_EMAIL_ATTRIBUTE, "profesor@example.edu");
+        return session;
     }
 }
