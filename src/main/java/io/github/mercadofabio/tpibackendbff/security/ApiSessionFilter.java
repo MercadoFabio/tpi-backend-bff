@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class ApiSessionFilter extends OncePerRequestFilter {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApiSessionFilter.class);
     public static final String SESSION_EMAIL_ATTRIBUTE = "authenticatedEmail";
 
     @Override
@@ -28,11 +29,14 @@ public class ApiSessionFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         if (request.getSession(false) == null
             || request.getSession(false).getAttribute(SESSION_EMAIL_ATTRIBUTE) == null) {
+            log.warn("[BFF-SECURITY] 🚫 Blocked unauthenticated request: {} {} (Missing __Host-tpi-session cookie)", request.getMethod(), request.getRequestURI());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write("{\"message\":\"Authentication is required\"}");
             return;
         }
+        Object userEmail = request.getSession(false).getAttribute(SESSION_EMAIL_ATTRIBUTE);
+        log.info("[BFF-SECURITY] 🛡️ Authorized request: {} {} (User: {})", request.getMethod(), request.getRequestURI(), userEmail);
         filterChain.doFilter(request, response);
     }
 }

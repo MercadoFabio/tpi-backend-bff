@@ -16,32 +16,44 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class UsuariosClient {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UsuariosClient.class);
     private static final ParameterizedTypeReference<List<UsuarioDto>> LIST_TYPE = new ParameterizedTypeReference<>() {
     };
 
     private final RestClient restClient;
+    private final String usersUrl;
 
     public UsuariosClient(@Qualifier("bffRestClientBuilder") RestClient.Builder restClientBuilder, ServiceProperties serviceProperties) {
-        this.restClient = restClientBuilder.baseUrl(serviceProperties.getUsersUrl()).build();
+        this.usersUrl = serviceProperties.getUsersUrl();
+        this.restClient = restClientBuilder.baseUrl(this.usersUrl).build();
     }
 
     public List<UsuarioDto> getUsuarios() {
         try {
-            return Objects.requireNonNullElse(
+            log.info("[BFF-UPSTREAM] 🚀 Calling Usuarios Microservice -> GET {}/usuarios", usersUrl);
+            List<UsuarioDto> result = Objects.requireNonNullElse(
                 restClient.get().uri("/usuarios").retrieve().body(LIST_TYPE),
                 List.of()
             );
+            log.info("[BFF-UPSTREAM] 📥 Received {} users from Usuarios Microservice", result.size());
+            return result;
         } catch (RestClientException exception) {
+            log.error("[BFF-UPSTREAM] ❌ Failed to call Usuarios Microservice at {}/usuarios: {}", usersUrl, exception.getMessage());
             throw new UpstreamServiceException("users-service", exception);
         }
     }
 
     public UsuarioDto getUsuarioById(Long id) {
         try {
-            return restClient.get().uri("/usuarios/{id}", id).retrieve().body(UsuarioDto.class);
+            log.info("[BFF-UPSTREAM] 🚀 Calling Usuarios Microservice -> GET {}/usuarios/{}", usersUrl, id);
+            UsuarioDto result = restClient.get().uri("/usuarios/{id}", id).retrieve().body(UsuarioDto.class);
+            log.info("[BFF-UPSTREAM] 📥 Received user #{} ({}) from Usuarios Microservice", id, result != null ? result.nombre() : "null");
+            return result;
         } catch (HttpClientErrorException.NotFound exception) {
+            log.warn("[BFF-UPSTREAM] ⚠️ User #{} not found in Usuarios Microservice", id);
             throw new UserNotFoundException(id);
         } catch (RestClientException exception) {
+            log.error("[BFF-UPSTREAM] ❌ Failed to call Usuarios Microservice for user #{}: {}", id, exception.getMessage());
             throw new UpstreamServiceException("users-service", exception);
         }
     }
