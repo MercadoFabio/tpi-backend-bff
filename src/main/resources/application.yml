@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 3000
   error:
     include-message: never
     include-stacktrace: never
@@ -26,8 +26,8 @@ spring:
       url: ${REDIS_URL:redis://localhost:6379}
 
 services:
-  users-url: ${USERS_SERVICE_URL:http://localhost:8081}
-  products-url: ${PRODUCTS_SERVICE_URL:http://localhost:8082}
+  users-url: ${USERS_SERVICE_URL:http://localhost:8080}
+  products-url: ${PRODUCTS_SERVICE_URL:http://localhost:8081}
 
 app:
   demo-auth:
