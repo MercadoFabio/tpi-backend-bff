@@ -38,7 +38,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorDto> handleUnexpected(Exception exception, HttpServletRequest request) {
-        ApiErrorDto body = new ApiErrorDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno", request.getRequestURI());
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class).error("[BFF-ERROR] Unexpected error processing {}: ", request.getRequestURI(), exception);
+        ApiErrorDto body = new ApiErrorDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno: " + exception.getMessage(), request.getRequestURI());
         return ResponseEntity.internalServerError().body(body);
     }
 }
