@@ -25,9 +25,10 @@ spring:
     redis:
       url: ${REDIS_URL:redis://localhost:6379}
 
+# En la arquitectura de la lámina, el BFF consume los servicios ÚNICAMENTE a través del Backend API Gateway
 services:
-  users-url: ${USERS_SERVICE_URL:http://localhost:8080}
-  products-url: ${PRODUCTS_SERVICE_URL:http://localhost:8081}
+  users-url: ${BACKEND_GATEWAY_URL:http://backend-gateway:8080}
+  products-url: ${BACKEND_GATEWAY_URL:http://backend-gateway:8080}
 
 app:
   demo-auth:
